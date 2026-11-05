@@ -1,0 +1,6 @@
+{
+  "name": "WeatherTH",
+  "description": "WeatherTH - Dəqiq və ətraflı hava proqnozu proqramı",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
