@@ -7,27 +7,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.data.audio.WeatherSoundManager
-import com.example.data.model.WeatherCategory
-import com.example.data.model.WeatherConditionHelper
 import com.example.ui.screens.CitiesScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.theme.WeatherTHTheme
-import com.example.ui.viewmodel.WeatherUiState
 import com.example.ui.viewmodel.WeatherViewModel
 
 enum class CurrentScreen {
@@ -52,26 +42,6 @@ class MainActivity : ComponentActivity() {
 fun WeatherApp(
     viewModel: WeatherViewModel = viewModel()
 ) {
-    val context = LocalContext.current
-    val soundManager = remember { WeatherSoundManager(context) }
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> soundManager.pause()
-                Lifecycle.Event.ON_RESUME -> soundManager.resume()
-                Lifecycle.Event.ON_DESTROY -> soundManager.release()
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            soundManager.release()
-        }
-    }
-
     var currentScreen by remember { mutableStateOf(CurrentScreen.HOME) }
 
     val uiState by viewModel.uiState.collectAsState()
@@ -81,23 +51,6 @@ fun WeatherApp(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
-
-    // Determine current weather category for audio
-    val currentWeather = (uiState as? WeatherUiState.Success)?.forecast?.current
-    val isDay = currentWeather?.isDay != 0
-    val condition = currentWeather?.let { WeatherConditionHelper.getCondition(it.weatherCode, isDay) }
-    val category = condition?.category ?: WeatherCategory.CLEAR
-
-    // Update ambient sound when weather condition or sound setting changes
-    LaunchedEffect(category, isDay, settings.soundEnabled, settings.soundVolume, currentScreen) {
-        if (currentScreen == CurrentScreen.HOME && settings.soundEnabled) {
-            soundManager.setVolume(settings.soundVolume)
-            soundManager.setSoundEnabled(true, category, isDay)
-            soundManager.playAmbient(category, isDay)
-        } else {
-            soundManager.pause()
-        }
-    }
 
     Crossfade(
         targetState = currentScreen,
@@ -111,34 +64,12 @@ fun WeatherApp(
                     currentCity = currentCity,
                     savedCities = savedCities,
                     settings = settings,
-                    onRefresh = {
-                        soundManager.playClick()
-                        viewModel.refresh()
-                    },
-                    onCityClick = {
-                        soundManager.playClick()
-                        currentScreen = CurrentScreen.CITIES
-                    },
-                    onCitySelect = { city ->
-                        soundManager.playClick()
-                        viewModel.selectCity(city)
-                    },
-                    onFavoriteToggle = { city ->
-                        soundManager.playClick()
-                        viewModel.toggleFavorite(city)
-                    },
-                    onOpenSearch = {
-                        soundManager.playClick()
-                        currentScreen = CurrentScreen.CITIES
-                    },
-                    onOpenSettings = {
-                        soundManager.playClick()
-                        currentScreen = CurrentScreen.SETTINGS
-                    },
-                    onToggleSound = {
-                        soundManager.playClick()
-                        viewModel.toggleSound()
-                    },
+                    onRefresh = { viewModel.refresh() },
+                    onCityClick = { currentScreen = CurrentScreen.CITIES },
+                    onCitySelect = { city -> viewModel.selectCity(city) },
+                    onFavoriteToggle = { city -> viewModel.toggleFavorite(city) },
+                    onOpenSearch = { currentScreen = CurrentScreen.CITIES },
+                    onOpenSettings = { currentScreen = CurrentScreen.SETTINGS },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -153,18 +84,11 @@ fun WeatherApp(
                     settings = settings,
                     onSearchQueryChange = { q -> viewModel.onSearchQueryChanged(q) },
                     onCitySelect = { city ->
-                        soundManager.playClick()
                         viewModel.selectCity(city)
                         currentScreen = CurrentScreen.HOME
                     },
-                    onFavoriteToggle = { city ->
-                        soundManager.playClick()
-                        viewModel.toggleFavorite(city)
-                    },
-                    onBack = {
-                        soundManager.playClick()
-                        currentScreen = CurrentScreen.HOME
-                    },
+                    onFavoriteToggle = { city -> viewModel.toggleFavorite(city) },
+                    onBack = { currentScreen = CurrentScreen.HOME },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -172,48 +96,10 @@ fun WeatherApp(
             CurrentScreen.SETTINGS -> {
                 SettingsScreen(
                     settings = settings,
-                    onTemperatureUnitChange = { u ->
-                        soundManager.playClick()
-                        viewModel.setTemperatureUnit(u)
-                    },
-                    onWindSpeedUnitChange = { w ->
-                        soundManager.playClick()
-                        viewModel.setWindSpeedUnit(w)
-                    },
-                    onLanguageChange = { l ->
-                        soundManager.playClick()
-                        viewModel.setLanguage(l)
-                    },
-                    onSoundToggle = { enabled ->
-                        soundManager.playClick()
-                        viewModel.setSoundEnabled(enabled)
-                    },
-                    onSoundVolumeChange = { vol ->
-                        viewModel.setSoundVolume(vol)
-                        soundManager.setVolume(vol)
-                    },
-                    onPlaySampleSound = { sampleType ->
-                        when (sampleType) {
-                            "rain" -> {
-                                soundManager.setSoundEnabled(true)
-                                soundManager.playAmbient(WeatherCategory.RAIN, true)
-                            }
-                            "thunder" -> soundManager.playThunder()
-                            "wind" -> {
-                                soundManager.setSoundEnabled(true)
-                                soundManager.playAmbient(WeatherCategory.CLOUDY, true)
-                            }
-                            "night" -> {
-                                soundManager.setSoundEnabled(true)
-                                soundManager.playAmbient(WeatherCategory.CLEAR, false)
-                            }
-                            else -> soundManager.playClick()
-                        }
-                    },
-                    onBack = {
-                        soundManager.playClick()
-                        currentScreen = CurrentScreen.HOME
-                    },
+                    onTemperatureUnitChange = { u -> viewModel.setTemperatureUnit(u) },
+                    onWindSpeedUnitChange = { w -> viewModel.setWindSpeedUnit(w) },
+                    onLanguageChange = { l -> viewModel.setLanguage(l) },
+                    onBack = { currentScreen = CurrentScreen.HOME },
                     modifier = Modifier.fillMaxSize()
                 )
             }

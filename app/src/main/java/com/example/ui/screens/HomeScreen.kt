@@ -34,8 +34,6 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.VolumeOff
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -84,7 +82,6 @@ fun HomeScreen(
     onFavoriteToggle: (City) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit,
-    onToggleSound: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isAz = settings.language == AppLanguage.AZ
@@ -110,12 +107,10 @@ fun HomeScreen(
             HomeTopBar(
                 currentCity = currentCity,
                 isLoading = uiState is WeatherUiState.Loading,
-                settings = settings,
                 onRefresh = onRefresh,
                 onCityClick = onCityClick,
                 onOpenSearch = onOpenSearch,
-                onOpenSettings = onOpenSettings,
-                onToggleSound = onToggleSound
+                onOpenSettings = onOpenSettings
             )
 
             // Quick City Switcher Row (Favorites & selected)
@@ -162,12 +157,10 @@ fun HomeScreen(
 private fun HomeTopBar(
     currentCity: City,
     isLoading: Boolean,
-    settings: UserSettings,
     onRefresh: () -> Unit,
     onCityClick: () -> Unit,
     onOpenSearch: () -> Unit,
-    onOpenSettings: () -> Unit,
-    onToggleSound: () -> Unit
+    onOpenSettings: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "refresh")
     val angle by infiniteTransition.animateFloat(
@@ -219,21 +212,6 @@ private fun HomeTopBar(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Sound Effect Toggle Button
-            IconButton(
-                onClick = onToggleSound,
-                modifier = Modifier
-                    .size(40.dp)
-                    .testTag("sound_button")
-            ) {
-                Icon(
-                    imageVector = if (settings.soundEnabled) Icons.Filled.VolumeUp else Icons.Filled.VolumeOff,
-                    contentDescription = if (settings.soundEnabled) "Səsi söndür" else "Səsi yandır",
-                    tint = if (settings.soundEnabled) SkyBlueLight else Color.White.copy(alpha = 0.45f),
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
             IconButton(
                 onClick = onRefresh,
                 enabled = !isLoading,

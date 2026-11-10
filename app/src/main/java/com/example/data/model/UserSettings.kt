@@ -19,9 +19,7 @@ enum class AppLanguage(val code: String, val label: String) {
 data class UserSettings(
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val windSpeedUnit: WindSpeedUnit = WindSpeedUnit.KMH,
-    val language: AppLanguage = AppLanguage.AZ,
-    val soundEnabled: Boolean = true,
-    val soundVolume: Float = 0.7f
+    val language: AppLanguage = AppLanguage.AZ
 ) {
     fun formatTemp(celsius: Double): String {
         return when (temperatureUnit) {

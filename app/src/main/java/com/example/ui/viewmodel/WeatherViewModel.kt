@@ -127,17 +127,4 @@ class WeatherViewModel(
     fun setLanguage(language: AppLanguage) {
         _userSettings.value = _userSettings.value.copy(language = language)
     }
-
-    fun toggleSound() {
-        val current = _userSettings.value.soundEnabled
-        _userSettings.value = _userSettings.value.copy(soundEnabled = !current)
-    }
-
-    fun setSoundEnabled(enabled: Boolean) {
-        _userSettings.value = _userSettings.value.copy(soundEnabled = enabled)
-    }
-
-    fun setSoundVolume(volume: Float) {
-        _userSettings.value = _userSettings.value.copy(soundVolume = volume)
-    }
 }

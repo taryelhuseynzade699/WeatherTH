@@ -22,22 +22,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -63,9 +56,6 @@ fun SettingsScreen(
     onTemperatureUnitChange: (TemperatureUnit) -> Unit,
     onWindSpeedUnitChange: (WindSpeedUnit) -> Unit,
     onLanguageChange: (AppLanguage) -> Unit,
-    onSoundToggle: (Boolean) -> Unit,
-    onSoundVolumeChange: (Float) -> Unit,
-    onPlaySampleSound: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -212,118 +202,6 @@ fun SettingsScreen(
                             onClick = { onLanguageChange(lang) },
                             colors = RadioButtonDefaults.colors(selectedColor = SkyBlueLight)
                         )
-                    }
-                }
-            }
-
-            // Weather Sound Effects Card
-            val soundTitle = if (isAz) "Hava Səs Effektləri" else "Weather Sound Effects"
-            SettingsCard(
-                title = soundTitle,
-                icon = Icons.Filled.VolumeUp,
-                iconTint = SkyBlueLight
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    // Sound Master Switch
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = if (isAz) "Atmosfer Səsləri" else "Ambient Weather Audio",
-                                color = Color.White,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = if (isAz) "Yağış, külək, gecə və fırtına canlı səsləri" else "Rain, wind, night, and thunder ambient soundscapes",
-                                color = Color.White.copy(alpha = 0.65f),
-                                fontSize = 12.sp
-                            )
-                        }
-                        Switch(
-                            checked = settings.soundEnabled,
-                            onCheckedChange = onSoundToggle,
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = SkyBlueLight
-                            )
-                        )
-                    }
-
-                    if (settings.soundEnabled) {
-                        // Volume Slider
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = if (isAz) "Səs Səviyyəsi" else "Volume Level",
-                                    color = Color.White.copy(alpha = 0.85f),
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    text = "${(settings.soundVolume * 100).toInt()}%",
-                                    color = SkyBlueLight,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Slider(
-                                value = settings.soundVolume,
-                                onValueChange = onSoundVolumeChange,
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = SkyBlueLight,
-                                    activeTrackColor = SkyBlueLight
-                                )
-                            )
-                        }
-
-                        // Sample Previews
-                        Text(
-                            text = if (isAz) "Səs Nümunələri (Sınaq üçün toxunun):" else "Sample Sounds (Tap to preview):",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            val samples = listOf(
-                                "rain" to (if (isAz) "🌧 Yağış" else "🌧 Rain"),
-                                "thunder" to (if (isAz) "⚡ Şimşək" else "⚡ Thunder"),
-                                "wind" to (if (isAz) "💨 Külək" else "💨 Wind"),
-                                "night" to (if (isAz) "🌙 Gecə" else "🌙 Night")
-                            )
-
-                            samples.forEach { (type, label) ->
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(Color.White.copy(alpha = 0.08f))
-                                        .clickable { onPlaySampleSound(type) }
-                                        .padding(vertical = 8.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = label,
-                                        color = Color.White,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }

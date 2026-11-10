@@ -36,11 +36,4 @@ class WeatherUnitTest {
         assertEquals("72°F", settingsF.formatTemp(22.0))
         assertEquals("11 mph", settingsF.formatWind(18.0))
     }
-
-    @Test
-    fun testSoundSettingsDefaults() {
-        val settings = UserSettings()
-        assertEquals(true, settings.soundEnabled)
-        assertEquals(0.7f, settings.soundVolume, 0.001f)
-    }
 }
